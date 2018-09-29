@@ -36,6 +36,7 @@ The main class for generating keys, signing and verifying. It contains the follo
 importPublicKey(tag: string, key: string): RsaKey;
 ```
 Imports a public key in PEM format into the keychain and returns a RsaKey instance.
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | tag | string | The tag or alias to associate with this key when storing in the keychain |
@@ -66,6 +67,7 @@ Generate a new key pair with the specified key size.
 sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): string;
 ```
 Create a signature of specified data with a private key. Returns the signature as a Base64-string.
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | data | string | The data to be signed. Must be in UTF-8 encoding. |
@@ -76,6 +78,7 @@ Create a signature of specified data with a private key. Returns the signature a
 verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean;
 ```
 Verifies a signature using a public key.
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | signature | string | The signature to verify. Must be a base64-string. |
