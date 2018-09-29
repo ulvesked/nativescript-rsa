@@ -7,7 +7,7 @@ export class HelloWorldModel extends Observable {
   private rsa: Rsa;
   private key: RsaKey;
   private signature: string;
-  private tag = "com.kustevent.app.test";
+  private tag = "org.nativescript.plugin.rsa.demo.key";
 
 
   constructor() {
