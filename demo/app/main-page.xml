@@ -2,5 +2,12 @@
   xmlns:ui="nativescript-rsa">
   <StackLayout class="p-20">
     <Label text="{{ message }}" class="t-20 text-center c-black" textWrap="true"/>
+    <Button text="load key" tap="{{ loadKey }}" />
+    <Button text="generate key" tap="{{ getPublicKey }}" />
+    <TextView text="/* Enter public key here */" id="pubkey" />
+    <TextView text="/* Enter your message here */" id="msg" />
+    <Button text="sign" tap="{{ sign }}" class="testbtn2" />
+    <TextView text="/* Enter your signature here */" id="sig" />
+    <Button text="verify" tap="{{ verify }}" class="testbtn2" />
   </StackLayout>
 </Page>

@@ -1,7 +1,7 @@
 {
     "name": "nativescript-rsa",
     "version": "1.0.0",
-    "description": "Your awesome NativeScript plugin.",
+    "description": "Utilities for managing RSA keys in PEM format ",
     "main": "rsa",
     "typings": "index.d.ts",
     "nativescript": {
@@ -44,13 +44,13 @@
     "homepage": "https://github.com/ulvesked/nativescript-rsa",
     "readmeFilename": "README.md",
     "devDependencies": {
-        "tns-core-modules": "^4.2.0",
-        "tns-platform-declarations": "^4.2.0",
-        "typescript": "~2.8.2",
         "prompt": "^1.0.0",
         "rimraf": "^2.6.2",
+        "semver": "^5.5.0",
+        "tns-core-modules": "^4.2.0",
+        "tns-platform-declarations": "^4.2.1",
         "tslint": "^5.11.0",
-        "semver": "^5.5.0"
+        "typescript": "~2.8.2"
     },
     "dependencies": {},
     "bootstrapper": "nativescript-plugin-seed"
