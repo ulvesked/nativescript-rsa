@@ -26,7 +26,7 @@ console.log('signature is valid = ' + isValid);
 
 ## API
 
-Describe your plugin methods and properties here. See [nativescript-feedback](https://github.com/EddyVerbruggen/nativescript-feedback) for example.
+The API is relatively straight forward. The `Rsa` class is normally the only class you need to use directly.
 
 ### Class: Rsa
 
@@ -63,7 +63,7 @@ Removes key with the specified tag from the keychain.
 ```js
 generateKey(tag: string, keySize: number, permanent?: boolean): RsaKey;
 ```
-Generate a new key pair with the specified key size. 
+Generate a new Private/Public key pair with the specified key size. 
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -95,7 +95,7 @@ Verifies a signature using a public key.
 | --- | --- | --- |
 | signature | string | The signature to verify. Must be a base64-string. |
 | data | string | The data to be signed. Must be in UTF-8 encoding. |
-| key | RsaKey | Public key to verify with. |
+| key | RsaKey | Public key to verify with. If a private key is specified, the public key will be extracted from it. |
 | alg | RsaHashAlgorithm | The algorithm to use. See RsaHashAlgorithm below for possible values |
 
 ### Class: RsaKey
