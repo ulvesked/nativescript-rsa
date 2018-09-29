@@ -32,6 +32,8 @@ Describe your plugin methods and properties here. See [nativescript-feedback](ht
 
 The main class for generating keys, signing and verifying. It contains the following methods:
 
+#### importPublicKey
+
 ```js
 importPublicKey(tag: string, key: string): RsaKey;
 ```
@@ -42,15 +44,21 @@ Imports a public key in PEM format into the keychain and returns a RsaKey instan
 | tag | string | The tag or alias to associate with this key when storing in the keychain |
 | key | string | PEM encoded public key in BASE64. May include the PEM headers (`-----BEGIN PUBLIC KEY-----`,  `-----END PUBLIC KEY-----`) |
 
+#### loadKey
+
 ```js
 loadKey(tag: string): RsaKey;
 ```
 Loads the key with the specified tag from the keychain. Returns a RsaKey instance if found, null otherwise.
 
+#### removeKeyFromKeychain
+
 ```js
 removeKeyFromKeychain(tag: string): void;
 ```
 Removes key with the specified tag from the keychain.
+
+#### generateKey
 
 ```js
 generateKey(tag: string, keySize: number, permanent?: boolean): RsaKey;
@@ -63,6 +71,8 @@ Generate a new key pair with the specified key size.
 | keySize | number | Key size in bits |
 | permanent | boolean | (optional) Make this key persistent in the keychain. Non-Persistent keys remain available until you do not use them any more |
 
+#### sign
+
 ```js
 sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): string;
 ```
@@ -73,6 +83,8 @@ Create a signature of specified data with a private key. Returns the signature a
 | data | string | The data to be signed. Must be in UTF-8 encoding. |
 | key | RsaKey | Private key to sign with. |
 | alg | RsaHashAlgorithm | The algorithm to use. See RsaHashAlgorithm below for possible values |
+
+#### verify
 
 ```js
 verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean;
@@ -91,16 +103,20 @@ This class is a wrapper around the platform specific native keys.
 
 Internally uses `SecKeyRef` for iOS and `java.security.KeyPair` for Android.
 
+#### constructor
+
 ```js
 constructor(data: SecKeyRef | java.security.KeyPair);
 ```
 Create a RsaKey instance using a native key as data.
 
+#### valueOf
 ```js
 valueOf(): SecKeyRef | java.security.KeyPair;
 ```
 Returns the native key that this RsaKey instance wraps.
 
+#### getPublicKey
 ```js
 getPublicKey(): string;
 ```
