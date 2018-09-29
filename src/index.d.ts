@@ -8,6 +8,7 @@ export declare enum RsaHashAlgorithm {
 export declare class Rsa {
   importPublicKey(tag: string, key: string): RsaKey;
   loadKey(tag: string): RsaKey;
+  removeKeyFromKeychain(tag: string): void;
   generateKey(tag: string, keySize: number, permanent?: boolean): RsaKey;
   sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): string;
   verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean;
