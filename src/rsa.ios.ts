@@ -34,17 +34,38 @@ function stringToNSData(data: string) {
 export class Rsa {
 
     importPublicKey(tag: string, key: string) {
-        let pubKey = RSAKeyUtils.importPublicKeyFromPEMTagName(stripPEMHeader(key), tag);
-        return new RsaKey(pubKey);
+        try {
+            let pubKey = RSAKeyUtils.importPublicKeyFromPEMTagName(stripPEMHeader(key), tag);
+            return new RsaKey(pubKey);
+        }
+        catch (err) {
+            console.warn("Rsa.importPublicKey failed with error: " + err);
+            return null;
+        }
     }
     importPrivateKey(tag: string, key: string) {
-        let privKey = RSAKeyUtils.importPrivateKeyFromPEMTagName(stripPEMHeader(key), tag);
-        return new RsaKey(privKey);
+        try {
+            let privKey = RSAKeyUtils.importPrivateKeyFromPEMTagName(stripPEMHeader(key), tag);
+            return new RsaKey(privKey);
+        }
+        catch (err) {
+            console.warn("Rsa.importPrivateKey failed with error: " + err);
+            return null;
+        }
     }
     removeKeyFromKeychain(tag: string) {
-        RSAKeyUtils.removeKeyFromKeychain(tag);
+        try {
+            RSAKeyUtils.removeKeyFromKeychain(tag);
+        }
+        catch (err) {
+            console.warn("Rsa.removeKeyFromKeychain failed with error: " + err);
+        }
     }
     loadKey(tag: string): RsaKey {
+
+        if (tag == null) {
+            return null;
+        }
 
         const privTagData = stringToNSData(tag);
         const query = NSMutableDictionary.new();
@@ -53,78 +74,115 @@ export class Rsa {
         query.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
         query.setValueForKey(true, kSecReturnRef);
         const keyRef = new interop.Reference<any>();
-        let status = SecItemCopyMatching(query, keyRef);
-        //  CFRelease(query);
-        if (status != errSecSuccess) {
-            console.log('error: ' + status);
-            throw new Error(`loadKey failed with status ${status}`);
+        try {
+            let status = SecItemCopyMatching(query, keyRef);
+            //  CFRelease(query);
+            if (status != errSecSuccess) {
+                console.warn('Rsa.loadKey failed with status ' + status);
+                return null;
+            }
+            else if (keyRef.value == null) {
+
+                console.warn('Rsa.loadKey returned null ');
+                return null;
+            }
+            else {
+                return new RsaKey(keyRef.value);
+            }
         }
-        else {
-            return new RsaKey(keyRef);
+        catch (err) {
+            console.warn('Rsa.loadKey failed with error ' + err);
+            return null;
         }
 
     }
     generateKey(tag: string, keySize: number, permanent?: boolean) {
 
-        const privTagData = stringToNSData(tag);
-        const params = NSMutableDictionary.new();
-        params.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
-        params.setValueForKey(NSNumber.numberWithInt(keySize), kSecAttrKeySizeInBits);
-        const privAttrs = NSMutableDictionary.new();
+        try {
+            const privTagData = stringToNSData(tag);
+            const params = NSMutableDictionary.new();
+            params.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
+            params.setValueForKey(NSNumber.numberWithInt(keySize), kSecAttrKeySizeInBits);
+            const privAttrs = NSMutableDictionary.new();
 
-        if (permanent) {
-            privAttrs.setValueForKey(kCFBooleanTrue, kSecAttrIsPermanent);
+            if (permanent) {
+                privAttrs.setValueForKey(kCFBooleanTrue, kSecAttrIsPermanent);
+            }
+
+            privAttrs.setValueForKey(privTagData, kSecAttrApplicationTag);
+            params.setObjectForKey(privAttrs, kSecPrivateKeyAttrs);
+
+            const err = new interop.Reference<NSError>();
+            const keyPair = SecKeyCreateRandomKey(params, err);
+            if (keyPair === null) {
+                console.log("No key returned: ", err.value);
+                throw err;
+            } else {
+                console.log("Key returned: ", keyPair);
+                let result = new RsaKey(keyPair);
+                return result;
+            }
         }
+        catch (err) {
 
-        privAttrs.setValueForKey(privTagData, kSecAttrApplicationTag);
-        params.setObjectForKey(privAttrs, kSecPrivateKeyAttrs);
+            console.warn('Rsa.generateKey failed with error ' + err);
+            return null;
 
-        const err = new interop.Reference<NSError>();
-        const keyPair = SecKeyCreateRandomKey(params, err);
-        if (keyPair === null) {
-            console.log("No key returned: ", err.value);
-            throw err;
-        } else {
-            console.log("Key returned: ", keyPair);
-            let result = new RsaKey(keyPair);
-            return result;
         }
-
 
     }
 
     sign(data: string, key: RsaKey, alg: RsaHashAlgorithm) {
-        //let err = new interop.Reference<NSError>();
-        let nsData = stringToNSData(data);
-        let signature = SecKeyCreateSignature(key.valueOf(), alg, nsData, undefined);
-        let result = signature.base64EncodedStringWithOptions(0);
-        // if (nsData) {
-        //     CFRelease(nsData);
-        // }
-        // if (signature) {
-        //     CFRelease(signature);
-        // }
-        // if (err && err.value) {
-        //     CFRelease(err);
-        // }
-        return result;
+        let err = new interop.Reference<NSError>();
+        try {
+            let nsData = stringToNSData(data);
+            let signature = SecKeyCreateSignature(key.valueOf(), alg, nsData, err);
+            let result = signature.base64EncodedStringWithOptions(0);
+            // if (nsData) {
+            //     CFRelease(nsData);
+            // }
+            // if (signature) {
+            //     CFRelease(signature);
+            // }
+            // if (err && err.value) {
+            //     CFRelease(err);
+            // }    
+             if (err && err.value) {
+                console.warn('Rsa.verify failed with error ' + err);
+                return null;
+            }
+            return result;
+        }
+        catch (err) {
+            console.warn('Rsa.sign failed with error ' + err);
+            return null;
+        }
     }
     verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm) {
-        //    let err = new interop.Reference<NSError>();
-        console.log(signature, data, key, alg);
-        let signatureBytes = NSData.alloc().initWithBase64Encoding(signature);
-        let nsData = stringToNSData(data);
-        let result = SecKeyVerifySignature(key.valueOf(), alg, nsData, signatureBytes, undefined);
-        // if (nsData) {
-        //     CFRelease(nsData);
-        // }
-        // if (signatureBytes) {
-        //     CFRelease(signatureBytes);
-        // }
-        // if (err && err.value) {
-        //     CFRelease(err);
-        // }
-        return result;
+        try {
+            let err = new interop.Reference<NSError>();
+            console.log(signature, data, key, alg);
+            let signatureBytes = NSData.alloc().initWithBase64Encoding(signature);
+            let nsData = stringToNSData(data);
+            let pubKey = key.valueOf();
+
+            let result = SecKeyVerifySignature(pubKey, alg, nsData, signatureBytes, err);
+            // if (nsData) {
+            //     CFRelease(nsData);
+            // }
+            // if (signatureBytes) {
+            //     CFRelease(signatureBytes);
+            // }
+            if (err && err.value) {
+                console.warn('Rsa.verify failed with error ' + err);
+                return null;
+            }
+            return result;
+        }
+        catch (err) {
+            console.warn('Rsa.verify failed with error ' + err);
+            return null;
+        }
     }
     // encrypt(data: string, key: RsaKey, alg: RsaEncryptionAlgorithm) {
     //     let rawData = stringToNSData(data);
@@ -156,13 +214,17 @@ export class RsaKey {
             pubKeyRef = SecKeyCopyPublicKey(this._secKeyRef);
             console.log(pubKeyRef);
             err = new interop.Reference<NSError>();
-           // pubKeyData = SecKeyCopyExternalRepresentation(this._secKeyRef, err);
-          //  console.log(pubKeyData);
+            // pubKeyData = SecKeyCopyExternalRepresentation(this._secKeyRef, err);
+            //  console.log(pubKeyData);
             if (err && err.value) {
                 console.log("ERR", err.value.localizedDescription);
                 throw err.value.localizedDescription;
             }
             return RSAKeyUtils.exportPublicKeyToPEM(pubKeyRef);
+        }
+        catch (err) {
+            console.warn('RsaKey.getPublicKey failed with error ' + err);
+            return null;
         }
         finally {
             // if (pubKeyData) {
