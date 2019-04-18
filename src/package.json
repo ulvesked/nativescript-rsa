@@ -1,6 +1,6 @@
 {
     "name": "nativescript-rsa",
-    "version": "1.0.0",
+    "version": "1.0.1-beta.0",
     "description": "Utilities for managing RSA keys in PEM format ",
     "main": "rsa",
     "typings": "index.d.ts",
@@ -40,7 +40,7 @@
     "bugs": {
         "url": "https://github.com/ulvesked/nativescript-rsa/issues"
     },
-    "license": "Apache-2.0",
+    "license": "MIT",
     "homepage": "https://github.com/ulvesked/nativescript-rsa",
     "readmeFilename": "README.md",
     "devDependencies": {

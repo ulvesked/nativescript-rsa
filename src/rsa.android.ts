@@ -68,13 +68,22 @@ export class Rsa {
         return new RsaKey(keyPair);
 
     }
-    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): string {
+
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): ArrayBuffer
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: false): ArrayBuffer;
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: true): string;
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64?: boolean): ArrayBuffer | string {
         const signEngine = Signature.getInstance(getProviderName(alg));
         let privateKey = key.valueOf().getPrivate();
         signEngine.initSign(privateKey);
         signEngine.update(stringToByteArray(data));
         let sign = signEngine.sign();
-        return android.util.Base64.encodeToString(sign, android.util.Base64.NO_WRAP);
+        if (returnAsBase64) {
+            return android.util.Base64.encodeToString(sign, android.util.Base64.NO_WRAP);
+        }
+        else {
+            return new Uint8Array(sign).buffer;
+        }
     }
     verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean {
         const signEngine = Signature.getInstance(getProviderName(alg));

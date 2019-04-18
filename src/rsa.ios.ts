@@ -1,4 +1,4 @@
-/// <reference path="./RSAKeyUtils.d.ts" />
+/// <reference path="./RsaHelper.d.ts" />
 
 import { stripPEMHeader } from "./helper";
 
@@ -35,7 +35,7 @@ export class Rsa {
 
     importPublicKey(tag: string, key: string) {
         try {
-            let pubKey = RSAKeyUtils.importPublicKeyFromPEMTagName(stripPEMHeader(key), tag);
+            let pubKey = RsaHelper.importPublicKeyFromPEMTagName(stripPEMHeader(key), tag);
             return new RsaKey(pubKey);
         }
         catch (err) {
@@ -45,7 +45,7 @@ export class Rsa {
     }
     importPrivateKey(tag: string, key: string) {
         try {
-            let privKey = RSAKeyUtils.importPrivateKeyFromPEMTagName(stripPEMHeader(key), tag);
+            let privKey = RsaHelper.importPrivateKeyFromPEMTagName(stripPEMHeader(key), tag);
             return new RsaKey(privKey);
         }
         catch (err) {
@@ -55,7 +55,7 @@ export class Rsa {
     }
     removeKeyFromKeychain(tag: string) {
         try {
-            RSAKeyUtils.removeKeyFromKeychain(tag);
+            RsaHelper.removeKeyFromKeychain(tag);
         }
         catch (err) {
             console.warn("Rsa.removeKeyFromKeychain failed with error: " + err);
@@ -132,12 +132,16 @@ export class Rsa {
 
     }
 
-    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm) {
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): ArrayBuffer
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: false): ArrayBuffer;
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: true): string;
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64?: boolean): ArrayBuffer | string {
         let err = new interop.Reference<NSError>();
         try {
             let nsData = stringToNSData(data);
             let signature = SecKeyCreateSignature(key.valueOf(), alg, nsData, err);
-            let result = signature.base64EncodedStringWithOptions(0);
+        //    let result = interop.bufferFromData(signature);
+          //  let result = signature.base64EncodedStringWithOptions(0);
             // if (nsData) {
             //     CFRelease(nsData);
             // }
@@ -148,25 +152,37 @@ export class Rsa {
             //     CFRelease(err);
             // }    
              if (err && err.value) {
-                console.warn('Rsa.verify failed with error ' + err);
+                console.warn('Rsa.sign failed with error ' + err);
                 return null;
             }
-            return result;
+            if (returnAsBase64) {
+                return signature.base64EncodedStringWithOptions(0);
+            }
+            else {
+                return interop.bufferFromData(signature);
+            }
         }
         catch (err) {
             console.warn('Rsa.sign failed with error ' + err);
             return null;
         }
     }
-    verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm) {
+    verify(signature: string | ArrayBuffer, data: string, key: RsaKey, alg: RsaHashAlgorithm) {
         try {
             let err = new interop.Reference<NSError>();
             console.log(signature, data, key, alg);
-            let signatureBytes = NSData.alloc().initWithBase64Encoding(signature);
+            let signatureBytes: NSData | ArrayBuffer;
+            if (typeof(signature) == 'string') {
+                signatureBytes = NSData.alloc().initWithBase64Encoding(signature);
+            }
+            else {
+                signatureBytes = signature;
+            }
+            
             let nsData = stringToNSData(data);
             let pubKey = key.valueOf();
 
-            let result = SecKeyVerifySignature(pubKey, alg, nsData, signatureBytes, err);
+            let result = SecKeyVerifySignature(pubKey, alg, nsData, <NSData>signatureBytes, err);
             // if (nsData) {
             //     CFRelease(nsData);
             // }
@@ -220,7 +236,7 @@ export class RsaKey {
                 console.log("ERR", err.value.localizedDescription);
                 throw err.value.localizedDescription;
             }
-            return RSAKeyUtils.exportPublicKeyToPEM(pubKeyRef);
+            return RsaHelper.exportPublicKeyToPEM(pubKeyRef);
         }
         catch (err) {
             console.warn('RsaKey.getPublicKey failed with error ' + err);
