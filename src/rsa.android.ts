@@ -90,12 +90,15 @@ export class Rsa {
             return new Uint8Array(sign).buffer;
         }
     }
-    verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean {
+    verify(signature: string | ArrayBuffer, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean {
         const signEngine = Signature.getInstance(getProviderName(alg));
         let publicKey = key.valueOf().getPublic()
         signEngine.initVerify(publicKey);
         signEngine.update(stringToByteArray(data));
-        let signatureBytes = android.util.Base64.decode(signature, android.util.Base64.DEFAULT);
+        const signatureBytes = typeof signature === 'string'
+            ? android.util.Base64.decode(signature, android.util.Base64.DEFAULT)
+            : Array.from(new Uint8Array(signature));
+
         return signEngine.verify(signatureBytes);
     }
 }
