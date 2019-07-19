@@ -1,6 +1,6 @@
 {
     "name": "nativescript-rsa",
-    "version": "1.0.1-beta.0",
+    "version": "1.0.1-beta.2",
     "description": "Utilities for managing RSA keys in PEM format ",
     "main": "rsa",
     "typings": "index.d.ts",
@@ -34,8 +34,8 @@
         "iOS"
     ],
     "author": {
-        "name": "Your Name",
-        "email": "youremail@yourdomain.com"
+        "name": "Anders Knutsson",
+        "email": "aknutsson@outlook.com"
     },
     "bugs": {
         "url": "https://github.com/ulvesked/nativescript-rsa/issues"
