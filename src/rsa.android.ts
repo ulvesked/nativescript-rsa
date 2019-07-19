@@ -32,10 +32,15 @@ export class Rsa {
         let pubKey = kf.generatePublic(spec);
         return new RsaKey(new java.security.KeyPair(pubKey, null));
     }
-    loadKey(tag: string): RsaKey {
+    loadKey(tag: string): RsaKey | null {
         const keyStore = java.security.KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
         let entry = keyStore.getEntry(tag, null) as java.security.KeyStore.PrivateKeyEntry;
+
+        if (!entry) {
+            return null;
+        }
+
         let privKey = entry.getPrivateKey();
         let cert = entry.getCertificate();
         let pubKey = cert.getPublicKey();
@@ -85,12 +90,15 @@ export class Rsa {
             return new Uint8Array(sign).buffer;
         }
     }
-    verify(signature: string, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean {
+    verify(signature: string | ArrayBuffer, data: string, key: RsaKey, alg: RsaHashAlgorithm): boolean {
         const signEngine = Signature.getInstance(getProviderName(alg));
         let publicKey = key.valueOf().getPublic()
         signEngine.initVerify(publicKey);
         signEngine.update(stringToByteArray(data));
-        let signatureBytes = android.util.Base64.decode(signature, android.util.Base64.DEFAULT);
+        const signatureBytes = typeof signature === 'string'
+            ? android.util.Base64.decode(signature, android.util.Base64.DEFAULT)
+            : Array.from(new Uint8Array(signature));
+
         return signEngine.verify(signatureBytes);
     }
 }
