@@ -26,7 +26,7 @@ export class HelloWorldModel extends Observable {
   }
   sign(args) {
     let msgField: any = getViewById(args.object.page, "msg");
-    this.signature = this.rsa.sign(msgField.text, this.key, RsaHashAlgorithm.SHA256);
+    this.signature = this.rsa.sign(msgField.text, this.key, RsaHashAlgorithm.SHA256, true);
     console.log(this.signature);
     
     let signField: any = getViewById(args.object.page, "sig");

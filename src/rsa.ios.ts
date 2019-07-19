@@ -61,7 +61,7 @@ export class Rsa {
             console.warn("Rsa.removeKeyFromKeychain failed with error: " + err);
         }
     }
-    loadKey(tag: string): RsaKey {
+    loadKey(tag: string): RsaKey | null {
 
         if (tag == null) {
             return null;
@@ -132,7 +132,7 @@ export class Rsa {
 
     }
 
-    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): ArrayBuffer
+    sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): ArrayBuffer;
     sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: false): ArrayBuffer;
     sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: true): string;
     sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64?: boolean): ArrayBuffer | string {
@@ -140,8 +140,8 @@ export class Rsa {
         try {
             let nsData = stringToNSData(data);
             let signature = SecKeyCreateSignature(key.valueOf(), alg, nsData, err);
-        //    let result = interop.bufferFromData(signature);
-          //  let result = signature.base64EncodedStringWithOptions(0);
+            //    let result = interop.bufferFromData(signature);
+            //  let result = signature.base64EncodedStringWithOptions(0);
             // if (nsData) {
             //     CFRelease(nsData);
             // }
@@ -150,9 +150,9 @@ export class Rsa {
             // }
             // if (err && err.value) {
             //     CFRelease(err);
-            // }    
-             if (err && err.value) {
-                console.warn('Rsa.sign failed with error ' + err);
+            // }
+            if (err && err.value) {
+                console.warn('Rsa.sign failed with error ' + err.value.localizedDescription);
                 return null;
             }
             if (returnAsBase64) {
@@ -172,13 +172,13 @@ export class Rsa {
             let err = new interop.Reference<NSError>();
             console.log(signature, data, key, alg);
             let signatureBytes: NSData | ArrayBuffer;
-            if (typeof(signature) == 'string') {
+            if (typeof (signature) === 'string') {
                 signatureBytes = NSData.alloc().initWithBase64Encoding(signature);
             }
             else {
                 signatureBytes = signature;
             }
-            
+
             let nsData = stringToNSData(data);
             let pubKey = key.valueOf();
 
@@ -190,7 +190,7 @@ export class Rsa {
             //     CFRelease(signatureBytes);
             // }
             if (err && err.value) {
-                console.warn('Rsa.verify failed with error ' + err);
+                console.warn('Rsa.verify failed with error ' + err.value.localizedDescription);
                 return null;
             }
             return result;
