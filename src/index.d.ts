@@ -9,7 +9,7 @@ export declare class Rsa {
   importPublicKey(tag: string, key: string): RsaKey;
   importPrivateKey(tag: string, key: string): RsaKey;
   removeKeyFromKeychain(tag: string): void;
-  loadKey(tag: string): RsaKey;
+  loadKey(tag: string): RsaKey | null;
   generateKey(tag: string, keySize: number, permanent?: boolean): RsaKey;
   sign(data: string, key: RsaKey, alg: RsaHashAlgorithm): ArrayBuffer
   sign(data: string, key: RsaKey, alg: RsaHashAlgorithm, returnAsBase64: false): ArrayBuffer;

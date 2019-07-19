@@ -32,10 +32,15 @@ export class Rsa {
         let pubKey = kf.generatePublic(spec);
         return new RsaKey(new java.security.KeyPair(pubKey, null));
     }
-    loadKey(tag: string): RsaKey {
+    loadKey(tag: string): RsaKey | null {
         const keyStore = java.security.KeyStore.getInstance("AndroidKeyStore");
         keyStore.load(null);
         let entry = keyStore.getEntry(tag, null) as java.security.KeyStore.PrivateKeyEntry;
+
+        if (!entry) {
+            return null;
+        }
+
         let privKey = entry.getPrivateKey();
         let cert = entry.getCertificate();
         let pubKey = cert.getPublicKey();
