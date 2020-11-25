@@ -1,5 +1,5 @@
-/// <reference path="./RsaHelper.d.ts" />
-
+//// <reference path="./RsaHelper.d.ts" />
+declare const RsaHelper: any;
 import { stripPEMHeader } from "./helper";
 
 export enum RsaHashAlgorithm {
