@@ -1,8 +1,10 @@
 var Rsa = require("nativescript-rsa").Rsa;
 var rsa = new Rsa();
+var keyTag = 'org.nativescript.rsa.test';
 
-describe("greet function", function() {
-    it("exists", function() {
+describe("RSA key generation, signing and ", function() {
+    it("should generate a new key pair", function() {
+        rsa.generateKey()
         expect(rsa.greet).toBeDefined();
     });
 

@@ -1,2 +1,1 @@
 platform :ios, '10.0'
-pod 'RsaHelper', :git => 'https://github.com/ulvesked/RsaHelper.git'

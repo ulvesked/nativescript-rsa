@@ -1,6 +1,6 @@
-//// <reference path="./RsaHelper.d.ts" />
-declare const RsaHelper: any;
-import { stripPEMHeader } from "./helper";
+
+import { encode } from 'nativescript-base64';
+import { exportPublicKeyToPEM, getRawKeyFromPEM } from './pem';
 
 export enum RsaHashAlgorithm {
     SHA1 = kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1,
@@ -26,6 +26,7 @@ export enum RsaEncryptionAlgorithm {
     OAEP_SHA512_AESGCM = kSecKeyAlgorithmRSAEncryptionOAEPSHA512AESGCM
 
 }
+type RsaKeyType = "public" | "private";
 
 function stringToNSData(data: string) {
     return NSString.stringWithString(data).dataUsingEncoding(NSUTF8StringEncoding);
@@ -35,8 +36,44 @@ export class Rsa {
 
     importPublicKey(tag: string, key: string) {
         try {
-            let pubKey = RsaHelper.importPublicKeyFromPEMTagName(stripPEMHeader(key), tag);
-            return new RsaKey(pubKey);
+            let pubKeyData = getRawKeyFromPEM(key);
+            console.log(`pubKeyData: ${encode(pubKeyData)}`)
+            this.removeKeyFromKeychain(tag);
+
+            const tagData = stringToNSData(tag);
+            const query = NSMutableDictionary.new();
+            query.setValueForKey(kSecClassKey, kSecClass);
+            query.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
+            query.setValueForKey(tagData, kSecAttrApplicationTag);
+            query.setValueForKey(pubKeyData, kSecValueData);
+            query.setValueForKey(kSecAttrKeyClassPublic, kSecAttrKeyClass);
+            query.setValueForKey(kCFBooleanTrue, kSecAttrIsPermanent);
+            query.setValueForKey(true, kSecReturnRef);
+
+            const keyRef = new interop.Reference<any>();
+
+            try {
+                let status = SecItemAdd(query, keyRef);
+                //  CFRelease(query);
+                if (status != errSecSuccess) {
+                    console.warn('Rsa.importPublicKey failed with status ' + status);
+                    return null;
+                }
+                else if (keyRef.value == null) {
+                    console.warn('Rsa.importPublicKey returned null ');
+                    return null;
+                }
+                else {
+                    console.warn('Rsa.importPublicKey succeeded status ' + status);
+                    return new RsaKey(keyRef.value);
+                    return this.loadKey(tag);
+                }
+            }
+            catch (err) {
+                console.warn('Rsa.importPublicKey failed with error ' + err);
+                return null;
+            }
+
         }
         catch (err) {
             console.warn("Rsa.importPublicKey failed with error: " + err);
@@ -45,8 +82,40 @@ export class Rsa {
     }
     importPrivateKey(tag: string, key: string) {
         try {
-            let privKey = RsaHelper.importPrivateKeyFromPEMTagName(stripPEMHeader(key), tag);
-            return new RsaKey(privKey);
+            let privKeyData = getRawKeyFromPEM(key);
+            this.removeKeyFromKeychain(tag);
+
+            const tagData = stringToNSData(tag);
+            const query = NSMutableDictionary.new();
+            query.setValueForKey(kSecClassKey, kSecClass);
+            query.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
+            query.setValueForKey(tagData, kSecAttrApplicationTag);
+            query.setValueForKey(privKeyData, kSecValueData);
+            query.setValueForKey(kSecAttrKeyClassPrivate, kSecAttrKeyClass);
+            query.setValueForKey(true, kSecReturnPersistentRef);
+
+            const keyRef = new interop.Reference<any>();
+
+            try {
+                let status = SecItemAdd(query, keyRef);
+                //  CFRelease(query);
+                if (status != errSecSuccess) {
+                    console.warn('Rsa.importPrivateKey failed with status ' + status);
+                    return null;
+                }
+                else if (keyRef.value == null) {
+                    console.warn('Rsa.importPrivateKey returned null ');
+                    return null;
+                }
+                else {
+                    return this.loadKey(tag);
+                }
+            }
+            catch (err) {
+                console.warn('Rsa.importPrivateKey failed with error ' + err);
+                return null;
+            }
+
         }
         catch (err) {
             console.warn("Rsa.importPrivateKey failed with error: " + err);
@@ -55,7 +124,15 @@ export class Rsa {
     }
     removeKeyFromKeychain(tag: string) {
         try {
-            RsaHelper.removeKeyFromKeychain(tag);
+            const query = NSMutableDictionary.new();
+            query.setValueForKey(kSecClassKey, kSecClass);
+            query.setValueForKey(kSecAttrKeyTypeRSA, kSecAttrKeyType);
+            query.setValueForKey(tag, kSecAttrApplicationTag);
+            let status = SecItemDelete(query);
+            if (status != errSecSuccess) {
+                console.warn('Rsa.removeKeyFromKeychain failed with status ' + status);
+                return null;
+            }
         }
         catch (err) {
             console.warn("Rsa.removeKeyFromKeychain failed with error: " + err);
@@ -66,6 +143,9 @@ export class Rsa {
         if (tag == null) {
             return null;
         }
+
+
+        console.log('loadKey: ' + tag);
 
         const privTagData = stringToNSData(tag);
         const query = NSMutableDictionary.new();
@@ -83,7 +163,7 @@ export class Rsa {
             }
             else if (keyRef.value == null) {
 
-                console.warn('Rsa.loadKey returned null ');
+                console.warn('Rsa.loadKey returned null . status = ' + status);
                 return null;
             }
             else {
@@ -97,7 +177,7 @@ export class Rsa {
 
     }
     generateKey(tag: string, keySize: number, permanent?: boolean) {
-
+        this.removeKeyFromKeychain(tag);
         try {
             const privTagData = stringToNSData(tag);
             const params = NSMutableDictionary.new();
@@ -180,7 +260,7 @@ export class Rsa {
             }
 
             let nsData = stringToNSData(data);
-            let pubKey = key.valueOf();
+            let pubKey = SecKeyCopyPublicKey(key.valueOf());
 
             let result = SecKeyVerifySignature(pubKey, alg, nsData, <NSData>signatureBytes, err);
             // if (nsData) {
@@ -219,6 +299,7 @@ export class RsaKey {
     private _secKeyRef: any;
     constructor(data: any) {
         this._secKeyRef = data;
+        this.getAttributes();
     }
     valueOf(): any {
         return this._secKeyRef;
@@ -230,13 +311,13 @@ export class RsaKey {
             pubKeyRef = SecKeyCopyPublicKey(this._secKeyRef);
             console.log(pubKeyRef);
             err = new interop.Reference<NSError>();
-            // pubKeyData = SecKeyCopyExternalRepresentation(this._secKeyRef, err);
-            //  console.log(pubKeyData);
+            pubKeyData = SecKeyCopyExternalRepresentation(pubKeyRef, err);
+            console.log("pubKeyNative: " + pubKeyData.base64EncodedStringWithOptions(0));
             if (err && err.value) {
                 console.log("ERR", err.value.localizedDescription);
                 throw err.value.localizedDescription;
             }
-            return RsaHelper.exportPublicKeyToPEM(pubKeyRef);
+            return exportPublicKeyToPEM(interop.bufferFromData(pubKeyData));
         }
         catch (err) {
             console.warn('RsaKey.getPublicKey failed with error ' + err);
@@ -253,5 +334,12 @@ export class RsaKey {
             //     CFRelease(err);
             // }
         }
+    }
+    private getAttributes() {
+        const attr = SecKeyCopyAttributes(this._secKeyRef);
+        const allKeys = attr.allKeys;
+        console.log(allKeys);
+        const type = attr.valueForKey(kSecAttrKeyClass);
+        console.log("getAttributes() returned type " + type);
     }
 }
