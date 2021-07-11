@@ -1,6 +1,6 @@
 {
     "name": "nativescript-rsa",
-    "version": "1.1.0-beta.1",
+    "version": "1.2.0",
     "description": "Utilities for managing RSA keys in PEM format ",
     "main": "rsa",
     "typings": "index.d.ts",

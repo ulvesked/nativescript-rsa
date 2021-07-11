@@ -21,7 +21,7 @@ export class HelloWorldModel extends Observable {
   }
 
   test() {
-    let tag = 'com.kustevent.rsa.demo.key.test'
+    let tag = 'org.nativescript.rsa.demo.key.test'
     let key = this.rsa.generateKey(tag, 1024, true);
     console.log(key);
     let loadedKey = this.rsa.loadKey(tag);
