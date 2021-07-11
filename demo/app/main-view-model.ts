@@ -1,6 +1,5 @@
-import { Observable } from 'tns-core-modules/data/observable';
+import { getViewById, Observable } from '@nativescript/core'
 import { Rsa, RsaKey, RsaHashAlgorithm } from 'nativescript-rsa';
-import { getViewById } from 'tns-core-modules/ui/page/page';
 
 export class HelloWorldModel extends Observable {
   public message: string;

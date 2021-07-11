@@ -26,3 +26,4 @@ demo/report/stats.json
 typings
 demo/.migration_backup
 demo/.update_backup
+demo.old

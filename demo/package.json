@@ -1,26 +1,45 @@
 {
+  "name": "@nativescript/template-hello-world-ts",
+  "main": "app/app.ts",
+  "version": "8.0.6",
+  "author": "NativeScript Team <oss@nativescript.org>",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "app",
+    "App_Resources",
+    "hooks",
+    "tools",
+    "!tools/assets",
+    ".editorconfig",
+    "references.d.ts",
+    "tsconfig.json"
+  ],
+  "keywords": [
+    "nativescript",
+    "mobile",
+    "{N}",
+    "template"
+  ],
+  "repository": "<fill-your-repository-here>",
+  "bugs": {
+    "url": "https://github.com/NativeScript/NativeScript/issues"
+  },
+  "homepage": "https://github.com/NativeScript/nativescript-app-templates",
   "dependencies": {
     "@nativescript/core": "~8.0.0",
-    "nativescript-rsa": "file:../src",
-    "nativescript-theme-core": "^1.0.4",
-    "nativescript-unit-test-runner": "0.7.0"
+    "@nativescript/theme": "~3.0.1",
+    "nativescript-rsa": "file:../src"
   },
   "devDependencies": {
     "@nativescript/ios": "8.0.0",
-    "@nativescript/types": "^8.0.1",
-    "@nativescript/webpack": "~5.0.0-beta.0",
-    "jasmine-core": "^2.5.2",
-    "karma": "4.1.0",
-    "karma-jasmine": "2.0.1",
-    "karma-nativescript-launcher": "^0.4.0",
-    "karma-webpack": "3.0.5",
-    "nativescript-css-loader": "~0.26.1",
-    "tslint": "~5.4.3",
+    "@nativescript/types": "~8.0.0",
+    "@nativescript/webpack": "beta",
     "typescript": "~4.0.0"
   },
-  "scripts": {
-    "build.plugin": "cd ../src && npm run build",
-    "ci.tslint": "npm i && tslint --config '../tslint.json' 'app/**/*.ts' --exclude '**/node_modules/**'"
-  },
-  "main": "app.js"
+  "private": "true",
+  "readme": "NativeScript Application"
 }
