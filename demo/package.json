@@ -6,6 +6,7 @@
     "nativescript-unit-test-runner": "0.7.0"
   },
   "devDependencies": {
+    "@nativescript/ios": "8.0.0",
     "@nativescript/types": "^8.0.1",
     "@nativescript/webpack": "~5.0.0-beta.0",
     "jasmine-core": "^2.5.2",
@@ -14,7 +15,6 @@
     "karma-nativescript-launcher": "^0.4.0",
     "karma-webpack": "3.0.5",
     "nativescript-css-loader": "~0.26.1",
-    "tns-ios": "6.5.0",
     "tslint": "~5.4.3",
     "typescript": "~4.0.0"
   },
