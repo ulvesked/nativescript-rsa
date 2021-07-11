@@ -22,7 +22,8 @@
     },
     "exclude": [
         "node_modules",
-        "typings"
+        "typings",
+        "nsconfig.config.ts"
     ],
     "compileOnSave": false
 }
